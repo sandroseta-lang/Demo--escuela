@@ -19,20 +19,19 @@
         }
 
         /* --- PANTALLA DE CARGA (LOADER) --- */
-       /* --- PANTALLA DE CARGA (LOADER) --- */
-#loader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #000000; /* <--- ¡Este es el único cambio! */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease;
-}
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
 
         #loader img {
             max-width: 150px;
@@ -97,8 +96,8 @@
         /* --- CONTENEDOR DE VIDEOS --- */
         main {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
             padding: 15px 20px;
         }
 
@@ -108,11 +107,24 @@
             gap: 8px;
         }
 
-        .video-card video {
+        .video-wrapper {
+            position: relative;
             width: 100%;
+            padding-top: 56.25%; /* Relación de aspecto 16:9 */
             border-radius: 12px;
-            object-fit: cover;
+            overflow: hidden;
             background-color: #000;
+        }
+
+        .video-wrapper iframe, 
+        .video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            object-fit: cover;
         }
 
         .video-info {
@@ -187,7 +199,6 @@
             border-radius: 50%;
             margin-bottom: 2px;
         }
-
     </style>
 </head>
 <body>
@@ -230,12 +241,11 @@
                 setTimeout(() => {
                     loader.style.display = 'none';
                     app.style.display = 'block';
-                }, 500); // Espera a que termine la transición de opacidad
-            }, 2000); // La pantalla de carga dura 2 segundos
+                }, 500);
+            }, 2000);
         });
 
-        // 2. LISTA DE VIDEOS (Debes escribir el nombre de tus archivos .mp4 aquí)
-        // NOTA: Javascript local no puede escanear carpetas, debes definirlos en esta lista.
+        // 2. LISTA DE VIDEOS (Formatos permitidos: Links de YouTube o archivos .mp4 locales)
         const videoFiles = [
             "https://youtu.be/uuA0mdvvabs",
             "https://youtu.be/2HOclB0C378",
@@ -243,17 +253,26 @@
             "https://youtu.be/L5PyGFWFDls",
             "https://youtu.be/7hvFzOEz8-Q",
             "https://youtu.be/remwwDG99EA"
-            // Añade más nombres de archivo separados por comas
         ];
 
         const videoGrid = document.getElementById('videoGrid');
         const searchInput = document.getElementById('searchInput');
 
+        // Función auxiliar para extraer el ID de YouTube
+        function getYouTubeEmbedUrl(url) {
+            let videoId = "";
+            if (url.includes("youtu.be/")) {
+                videoId = url.split("youtu.be/")[1].split("?")[0];
+            } else if (url.includes("youtube.com/watch?v=")) {
+                videoId = url.split("v=")[1].split("&")[0];
+            }
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+        }
+
         // 3. FUNCIÓN PARA MOSTRAR LOS VIDEOS
         function renderVideos(filterText = "") {
-            videoGrid.innerHTML = ""; // Limpiar galería
+            videoGrid.innerHTML = "";
 
-            // Filtrar videos según lo que se escriba en el buscador
             const filteredVideos = videoFiles.filter(video => 
                 video.toLowerCase().includes(filterText.toLowerCase())
             );
@@ -263,15 +282,26 @@
                 return;
             }
 
-            // Crear el HTML para cada video
-            filteredVideos.forEach(fileName => {
-                // Formatear el nombre para usarlo de título (quitar el .mp4)
-                const title = fileName.replace('.mp4', '').replace(/_/g, ' ');
+            filteredVideos.forEach((fileUrl, index) => {
+                let mediaElement = "";
+                let title = `Video ${index + 1}`;
+
+                if (fileUrl.includes("youtube.com") || fileUrl.includes("youtu.be")) {
+                    // Es un video de YouTube -> Usa iframe
+                    const embedUrl = getYouTubeEmbedUrl(fileUrl);
+                    mediaElement = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+                } else {
+                    // Es un archivo local tipo .mp4
+                    title = fileUrl.replace('.mp4', '').replace(/_/g, ' ');
+                    mediaElement = `<video src="${fileUrl}" controls preload="metadata"></video>`;
+                }
 
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 card.innerHTML = `
-                    <video src="${fileName}" controls preload="metadata"></video>
+                    <div class="video-wrapper">
+                        ${mediaElement}
+                    </div>
                     <div class="video-info">
                         <div class="video-title">${title}</div>
                         <div class="video-options">⋮</div>
@@ -281,7 +311,6 @@
             });
         }
 
-        // Mostrar todos los videos al iniciar
         renderVideos();
 
         // 4. FUNCIÓN DEL BUSCADOR
@@ -291,4 +320,4 @@
     </script>
 
 </body>
-</html> 
+</html>
