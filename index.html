@@ -96,7 +96,6 @@
         /* --- CONTENEDOR DE VIDEOS (ADAPTATIVO) --- */
         main {
             display: grid;
-            /* Se adapta solo: 1 columna en celular, múltiples en compu */
             grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
             gap: 20px;
             padding: 15px 20px;
@@ -287,7 +286,7 @@
             }, 2000);
         });
 
-        // 2. LISTA DE VIDEOS (Formatos permitidos: Links de YouTube o archivos .mp4 locales)
+        // 2. LISTA DE VIDEOS
         const videoFiles = [
             "https://youtu.be/uuA0mdvvabs",
             "https://youtu.be/2HOclB0C378",
@@ -296,6 +295,9 @@
             "https://youtu.be/7hvFzOEz8-Q",
             "https://youtu.be/remwwDG99EA"
         ];
+
+        // Guardará los datos con el título real recuperado de YouTube
+        let loadedVideos = [];
 
         const videoGrid = document.getElementById('videoGrid');
         const searchInput = document.getElementById('searchInput');
@@ -311,31 +313,53 @@
             return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
         }
 
-        // 3. FUNCIÓN PARA MOSTRAR LOS VIDEOS
+        // Función para consultar a la API de YouTube el título exacto subido
+        async function fetchVideoTitle(url) {
+            if (url.includes("youtube.com") || url.includes("youtu.be")) {
+                try {
+                    const response = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.title; // Devuelve el título real exacto de YouTube
+                    }
+                } catch (error) {
+                    console.error("Error obteniendo el título del video:", error);
+                }
+            }
+            // Fallback si es un archivo local .mp4
+            return url.replace('.mp4', '').replace(/_/g, ' ');
+        }
+
+        // Carga inicial: consulta los títulos reales de todos los videos
+        async function initVideos() {
+            loadedVideos = await Promise.all(videoFiles.map(async (url) => {
+                const title = await fetchVideoTitle(url);
+                return { url, title };
+            }));
+            renderVideos();
+        }
+
+        // 3. FUNCIÓN PARA MOSTRAR LOS VIDEOS CON TÍTULOS OBTENIDOS
         function renderVideos(filterText = "") {
             videoGrid.innerHTML = "";
 
-            const filteredVideos = videoFiles.filter(video => 
-                video.toLowerCase().includes(filterText.toLowerCase())
+            const filteredVideos = loadedVideos.filter(item => 
+                item.title.toLowerCase().includes(filterText.toLowerCase())
             );
 
             if (filteredVideos.length === 0) {
-                videoGrid.innerHTML = "<p>No se encontraron videos.</p>";
+                videoGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; padding: 20px;'>No se encontraron videos.</p>";
                 return;
             }
 
-            filteredVideos.forEach((fileUrl, index) => {
+            filteredVideos.forEach((item) => {
                 let mediaElement = "";
-                let title = `Video ${index + 1}`;
 
-                if (fileUrl.includes("youtube.com") || fileUrl.includes("youtu.be")) {
-                    // Es un video de YouTube -> Usa iframe
-                    const embedUrl = getYouTubeEmbedUrl(fileUrl);
+                if (item.url.includes("youtube.com") || item.url.includes("youtu.be")) {
+                    const embedUrl = getYouTubeEmbedUrl(item.url);
                     mediaElement = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
                 } else {
-                    // Es un archivo local tipo .mp4
-                    title = fileUrl.replace('.mp4', '').replace(/_/g, ' ');
-                    mediaElement = `<video src="${fileUrl}" controls preload="metadata"></video>`;
+                    mediaElement = `<video src="${item.url}" controls preload="metadata"></video>`;
                 }
 
                 const card = document.createElement('div');
@@ -345,7 +369,7 @@
                         ${mediaElement}
                     </div>
                     <div class="video-info">
-                        <div class="video-title">${title}</div>
+                        <div class="video-title">${item.title}</div>
                         <div class="video-options">⋮</div>
                     </div>
                 `;
@@ -353,9 +377,10 @@
             });
         }
 
-        renderVideos();
+        // Inicia la carga de títulos y renderizado
+        initVideos();
 
-        // 4. FUNCIÓN DEL BUSCADOR
+        // 4. FUNCIÓN DEL BUSCADOR (FILTRA POR TÍTULO REAL OBTENIDO DE YOUTUBE)
         searchInput.addEventListener('input', (e) => {
             renderVideos(e.target.value);
         });
