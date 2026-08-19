@@ -60,12 +60,21 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Sombra sutil para el header */
         }
 
         #home-icon {
-            width: 40px;
+            width: 50px; /* Ligeramente más grande */
             height: auto;
             cursor: pointer;
+        }
+
+        .app-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .search-container {
@@ -93,12 +102,26 @@
             cursor: pointer;
         }
 
+        /* --- DESCRIPCIÓN ESTÉTICA --- */
+        .description-text {
+            background-color: #f4f7f6;
+            color: #444;
+            text-align: center;
+            padding: 18px 25px;
+            margin: 20px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.6;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border-left: 4px solid #000;
+        }
+
         /* --- CONTENEDOR DE VIDEOS (ADAPTATIVO) --- */
         main {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
             gap: 20px;
-            padding: 15px 20px;
+            padding: 10px 20px 20px 20px;
         }
 
         .video-card {
@@ -165,10 +188,6 @@
             z-index: 100;
         }
 
-        p {
-            padding: 4px
-        }
-
         .add-btn {
             width: 45px;
             height: 45px;
@@ -212,7 +231,12 @@
             }
 
             #home-icon {
-                width: 32px;
+                width: 40px; /* Ligeramente más grande en móvil también */
+            }
+
+            /* Ocultamos el nombre de la app en móvil para ahorrar espacio */
+            .app-name {
+                display: none; 
             }
 
             .search-container {
@@ -223,9 +247,15 @@
                 font-size: 14px;
             }
 
+            .description-text {
+                margin: 15px 12px;
+                padding: 15px;
+                font-size: 14px;
+            }
+
             main {
                 gap: 15px;
-                padding: 12px;
+                padding: 0 12px 15px 12px;
             }
 
             footer {
@@ -257,13 +287,17 @@
     <div id="app">
         <header>
             <img src="casita.PNG" alt="Inicio" id="home-icon">
+            <span class="app-name">Finder</span>
             <div class="search-container">
                 <span class="icon">🔍</span>
                 <input type="text" id="searchInput" placeholder="Buscar video...">
                 <span class="icon">🎤</span>
             </div>
         </header>
-        <p>Esta página contiene videos hechos en SuiteHome3D, sobre las aulas de la escuela renderizadas por 6to A.</p>
+        
+        <p class="description-text">
+            Esta página contiene videos hechos en <strong>SuiteHome3D</strong>, sobre las aulas de la escuela renderizadas por <strong>6to A</strong>.
+        </p>
 
         <main id="videoGrid">
             <!-- Los videos se insertarán aquí con JavaScript -->
@@ -288,7 +322,7 @@
                     loader.style.display = 'none';
                     app.style.display = 'block';
                 }, 500);
-            }, 2000);
+            }, 3500); // Se aumentó el tiempo a 3.5 segundos
         });
 
         // 2. LISTA DE VIDEOS
