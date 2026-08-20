@@ -231,10 +231,9 @@
             }
 
             #home-icon {
-                width: 40px; /* Ligeramente más grande en móvil también */
+                width: 40px;
             }
 
-            /* Ocultamos el nombre de la app en móvil para ahorrar espacio */
             .app-name {
                 display: none; 
             }
@@ -322,7 +321,7 @@
                     loader.style.display = 'none';
                     app.style.display = 'block';
                 }, 500);
-            }, 3500); // Se aumentó el tiempo a 3.5 segundos
+            }, 3500);
         });
 
         // 2. LISTA DE VIDEOS
@@ -332,7 +331,9 @@
             "https://youtu.be/uABNkjOTLEA",
             "https://youtu.be/L5PyGFWFDls",
             "https://youtu.be/7hvFzOEz8-Q",
-            "https://youtu.be/remwwDG99EA"
+            "https://youtu.be/remwwDG99EA",
+            "https://youtu.be/NUEVO_VIDEO_ID",
+            "https://www.youtube.com/watch?v=vPbeuAkEhWg"
         ];
 
         // Guardará los datos con el título real recuperado de YouTube
@@ -359,13 +360,12 @@
                     const response = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
                     if (response.ok) {
                         const data = await response.json();
-                        return data.title; // Devuelve el título real exacto de YouTube
+                        return data.title;
                     }
                 } catch (error) {
                     console.error("Error obteniendo el título del video:", error);
                 }
             }
-            // Fallback si es un archivo local .mp4
             return url.replace('.mp4', '').replace(/_/g, ' ');
         }
 
