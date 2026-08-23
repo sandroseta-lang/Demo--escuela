@@ -427,14 +427,18 @@
         searchInput.addEventListener('input', (e) => {
             renderVideos(e.target.value);
         });
-        // 5. CONTADOR DE VISITAS MEJORADO
+       // 5. CONTADOR DE VISITAS CON RESPALDO
         fetch('https://api.counterapi.dev/v1/finder-6toa-escuela-sandro/visitas/up')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('visits').innerText = data.count;
+                if (data && data.count) {
+                    document.getElementById('visits').innerText = data.count;
+                } else {
+                    document.getElementById('visits').innerText = "24";
+                }
             })
             .catch(error => {
-                document.getElementById('visits').innerText = "15"; 
+                document.getElementById('visits').innerText = "24"; 
             });
     </script>
 
