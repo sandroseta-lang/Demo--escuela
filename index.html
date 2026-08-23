@@ -301,9 +301,11 @@
         <main id="videoGrid">
             <!-- Los videos se insertarán aquí con JavaScript -->
         </main>
-
-        <footer>
+<footer>
             <div class="add-btn">+</div>
+            <div id="visit-counter" style="font-size: 14px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 5px;
+                👁️ Visitas: <span id="visits">...</span>
+            </div>
             <div class="profile-icon"></div>
         </footer>
     </div>
@@ -425,6 +427,19 @@
         searchInput.addEventListener('input', (e) => {
             renderVideos(e.target.value);
         });
+        // 5. CONTADOR DE VISITAS (CountAPI)
+        const namespace = "finder-6toa-escuela-sandro"; 
+        const key = "visitas-pagina";
+
+        fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('visits').innerText = data.value;
+            })
+            .catch(error => {
+                console.error("Error cargando el contador de visitas:", error);
+                document.getElementById('visits').innerText = "1";
+            });
     </script>
 
 </body>
