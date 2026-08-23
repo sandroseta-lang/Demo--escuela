@@ -294,9 +294,9 @@
             </div>
         </header>
         
-        <p class="description-text">
-            Esta página contiene videos hechos en <strong>SweetHome3D</strong>, sobre las aulas de la escuela renderizadas por <strong>6to A</strong>.
-        </p>
+      <p class="description-text">
+    Esta página contiene videos e <strong>instructivos</strong> hechos en <strong>SweetHome3D</strong>, sobre las aulas de la escuela renderizadas por <strong>6to A</strong>.
+</p>
 
         <main id="videoGrid">
             <!-- Los videos se insertarán aquí con JavaScript -->
@@ -398,12 +398,14 @@
             filteredVideos.forEach((item) => {
                 let mediaElement = "";
 
-                if (item.url.includes("youtube.com") || item.url.includes("youtu.be")) {
-                    const embedUrl = getYouTubeEmbedUrl(item.url);
-                    mediaElement = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-                } else {
-                    mediaElement = `<video src="${item.url}" controls preload="metadata"></video>`;
-                }
+              if (item.url.includes("youtube.com") || item.url.includes("youtu.be")) {
+                const embedUrl = getYouTubeEmbedUrl(item.url);
+                mediaElement = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+            } else if (item.url.match(/\.(jpeg|jpg|png|gif)$/i)) {
+                mediaElement = `<img src="${item.url}" alt="${item.title}" style="width:100%; height:100%; object-fit:cover;">`;
+            } else {
+                mediaElement = `<video src="${item.url}" controls preload="metadata"></video>`;
+            }
 
                 const card = document.createElement('div');
                 card.className = 'video-card';
