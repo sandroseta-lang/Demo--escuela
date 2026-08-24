@@ -60,11 +60,11 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Sombra sutil para el header */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         #home-icon {
-            width: 50px; /* Ligeramente más grande */
+            width: 50px;
             height: auto;
             cursor: pointer;
         }
@@ -116,7 +116,7 @@
             border-left: 4px solid #000;
         }
 
-        /* --- CONTENEDOR DE VIDEOS (ADAPTATIVO) --- */
+        /* --- CONTENEDOR DE VIDEOS Y ARCHIVOS --- */
         main {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
@@ -140,7 +140,8 @@
         }
 
         .video-wrapper iframe, 
-        .video-wrapper video {
+        .video-wrapper video,
+        .video-wrapper img {
             position: absolute;
             top: 0;
             left: 0;
@@ -148,6 +149,28 @@
             height: 100%;
             border: none;
             object-fit: cover;
+        }
+
+        /* Estilo especial para tarjetas de PDF */
+        .pdf-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #2b2b2b;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            gap: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .pdf-wrapper:hover {
+            background-color: #1a1a1a;
         }
 
         .video-info {
@@ -223,7 +246,6 @@
             margin-bottom: 2px;
         }
 
-        /* --- REGLAS ESPECIALES PARA CELULARES Y TABLETS (MOBILE RESPONSIVE) --- */
         @media (max-width: 600px) {
             header {
                 padding: 10px 12px;
@@ -289,21 +311,22 @@
             <span class="app-name">Finder</span>
             <div class="search-container">
                 <span class="icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Buscar video...">
+                <input type="text" id="searchInput" placeholder="Buscar video e instructivos...">
                 <span class="icon">🎤</span>
             </div>
         </header>
         
-      <p class="description-text">
-    Esta página contiene videos e <strong>instructivos</strong> hechos en <strong>SweetHome3D</strong>, sobre las aulas de la escuela renderizadas por <strong>6to A</strong>.
-</p>
+        <p class="description-text">
+            Esta página contiene videos e <strong>instructivos</strong> hechos en <strong>SweetHome3D</strong>, sobre las aulas de la escuela renderizadas por <strong>6to A</strong>.
+        </p>
 
         <main id="videoGrid">
-            <!-- Los videos se insertarán aquí con JavaScript -->
+            <!-- Los videos e instructivos se insertarán aquí con JavaScript -->
         </main>
-<footer>
+
+        <footer>
             <div class="add-btn">+</div>
-            <div id="visit-counter" style="font-size: 14px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 5px;
+            <div id="visit-counter" style="font-size: 14px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 5px;">
                 👁️ Visitas: <span id="visits">...</span>
             </div>
             <div class="profile-icon"></div>
@@ -317,16 +340,16 @@
                 const loader = document.getElementById('loader');
                 const app = document.getElementById('app');
                 
-                loader.style.opacity = '0';
+                if (loader) loader.style.opacity = '0';
                 
                 setTimeout(() => {
-                    loader.style.display = 'none';
-                    app.style.display = 'block';
+                    if (loader) loader.style.display = 'none';
+                    if (app) app.style.display = 'block';
                 }, 500);
-            }, 3500);
+            }, 2000);
         });
 
-        // 2. LISTA DE VIDEOS
+        // 2. LISTA DE VIDEOS E INSTRUCTIVOS (PDF / IMÁGENES)
         const videoFiles = [
             "https://youtu.be/uuA0mdvvabs",
             "https://youtu.be/2HOclB0C378",
@@ -338,18 +361,16 @@
             "https://youtu.be/mh988ONv1KY",
             "https://youtu.be/HE0QHYNtTDA",
             "https://youtu.be/K2GLZ9ei0LM",
-            "Anita y Valen.pdf"
-            "Instructivo de Renata, Nina y Mora.pdf"
+            "Anita y Valen.pdf",
+            "Instructivo de Renata, Nina y Mora.pdf",
             "instructivo de Bautista.pdf"
         ];
 
-        // Guardará los datos con el título real recuperado de YouTube
         let loadedVideos = [];
 
         const videoGrid = document.getElementById('videoGrid');
         const searchInput = document.getElementById('searchInput');
 
-        // Función auxiliar para extraer el ID de YouTube
         function getYouTubeEmbedUrl(url) {
             let videoId = "";
             if (url.includes("youtu.be/")) {
@@ -360,7 +381,6 @@
             return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
         }
 
-        // Función para consultar a la API de YouTube el título exacto subido
         async function fetchVideoTitle(url) {
             if (url.includes("youtube.com") || url.includes("youtu.be")) {
                 try {
@@ -373,10 +393,10 @@
                     console.error("Error obteniendo el título del video:", error);
                 }
             }
-            return url.replace('.mp4', '').replace(/_/g, ' ');
+            // Limpia el nombre del archivo si es un PDF, imagen o video local
+            return url.replace('.pdf', '').replace('.PNG', '').replace('.png', '').replace('.mp4', '').replace(/_/g, ' ');
         }
 
-        // Carga inicial: consulta los títulos reales de todos los videos
         async function initVideos() {
             loadedVideos = await Promise.all(videoFiles.map(async (url) => {
                 const title = await fetchVideoTitle(url);
@@ -385,7 +405,7 @@
             renderVideos();
         }
 
-        // 3. FUNCIÓN PARA MOSTRAR LOS VIDEOS CON TÍTULOS OBTENIDOS
+        // 3. FUNCIÓN PARA MOSTRAR VIDEOS, IMÁGENES Y PDFs
         function renderVideos(filterText = "") {
             videoGrid.innerHTML = "";
 
@@ -394,21 +414,29 @@
             );
 
             if (filteredVideos.length === 0) {
-                videoGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; padding: 20px;'>No se encontraron videos.</p>";
+                videoGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; padding: 20px;'>No se encontraron resultados.</p>";
                 return;
             }
 
             filteredVideos.forEach((item) => {
                 let mediaElement = "";
 
-              if (item.url.includes("youtube.com") || item.url.includes("youtu.be")) {
-                const embedUrl = getYouTubeEmbedUrl(item.url);
-                mediaElement = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-            } else if (item.url.match(/\.(jpeg|jpg|png|gif)$/i)) {
-                mediaElement = `<img src="${item.url}" alt="${item.title}" style="width:100%; height:100%; object-fit:cover;">`;
-            } else {
-                mediaElement = `<video src="${item.url}" controls preload="metadata"></video>`;
-            }
+                if (item.url.includes("youtube.com") || item.url.includes("youtu.be")) {
+                    const embedUrl = getYouTubeEmbedUrl(item.url);
+                    mediaElement = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+                } else if (item.url.match(/\.(jpeg|jpg|png|gif)$/i)) {
+                    mediaElement = `<img src="${item.url}" alt="${item.title}">`;
+                } else if (item.url.match(/\.pdf$/i)) {
+                    // Tarjeta táctil y clicable para abrir el PDF completo
+                    mediaElement = `
+                        <a href="${item.url}" target="_blank" class="pdf-wrapper">
+                            <span style="font-size: 35px;">📄</span>
+                            <span style="font-size: 13px; font-weight: bold;">Abrir Instructivo PDF</span>
+                        </a>
+                    `;
+                } else {
+                    mediaElement = `<video src="${item.url}" controls preload="metadata"></video>`;
+                }
 
                 const card = document.createElement('div');
                 card.className = 'video-card';
@@ -425,14 +453,13 @@
             });
         }
 
-        // Inicia la carga de títulos y renderizado
         initVideos();
 
-        // 4. FUNCIÓN DEL BUSCADOR (FILTRA POR TÍTULO REAL OBTENIDO DE YOUTUBE)
         searchInput.addEventListener('input', (e) => {
             renderVideos(e.target.value);
         });
-       // 5. CONTADOR DE VISITAS CON RESPALDO
+
+        // 5. CONTADOR DE VISITAS CON RESPALDO
         fetch('https://api.counterapi.dev/v1/finder-6toa-escuela-sandro/visitas/up')
             .then(response => response.json())
             .then(data => {
@@ -446,6 +473,5 @@
                 document.getElementById('visits').innerText = "24"; 
             });
     </script>
-
 </body>
 </html>
